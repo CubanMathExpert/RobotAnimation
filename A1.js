@@ -74,7 +74,13 @@ function translateMat(matrix, x, y, z) {
 
   // TODO
   var m = new THREE.Matrix4();
-  return m;
+  m.set(
+    1,0,0,x,
+    0,1,0,y,
+    0,0,1,z,
+    0,0,0,1
+  );
+  return multMat(m, matrix);
 }
 
 function rotateMat(matrix, angle, axis){
@@ -84,6 +90,32 @@ function rotateMat(matrix, angle, axis){
   // axis: string "x", "y" or "z"
   
   // TODO
+  let rotationMatrix = new THREE.Matrix4();
+  if (axis == "x") {
+      rotationMatrix.set(
+        1,0,0,0,
+        0,Math.cos(angle),-Math.sin(angle), 0,
+        0,Math.sin(angle),Math.cos(angle), 0,
+        0,0,0,1
+      );
+  }
+  if (axis == "y") {
+      rotationMatrix.set(
+        Math.cos(angle),0,Math.sin(angle),0,
+        0,1,0,0,
+        -Math.sin(angle),0,Math.cos(angle),0,
+        0,0,0,1
+      );
+  }
+  if (axis == "z") {
+      rotationMatrix.set(
+        Math.cos(angle),-Math.sin(angle),0,0,
+        Math.sin(angle),Math.cos(angle),0,0,
+        0,0,1,0,
+        0,0,0,1
+      );
+  }
+  return multMat(rotationMatrix, matrix);
 }
 
 function rotateVec3(v, angle, axis){
@@ -93,6 +125,32 @@ function rotateVec3(v, angle, axis){
   // axis: string "x", "y" or "z"
   
   // TODO
+  let rotationMatrix = new THREE.Matrix4();
+  if (axis == "x") {
+      rotationMatrix.set(
+        1,0,0,0,
+        0,Math.cos(angle),-Math.sin(angle), 0,
+        0,Math.sin(angle),Math.cos(angle), 0,
+        0,0,0,1
+      );
+  }
+  if (axis == "y") {
+      rotationMatrix.set(
+        Math.cos(angle),0,Math.sin(angle),0,
+        0,1,0,0,
+        -Math.sin(angle),0,Math.cos(angle),0,
+        0,0,0,1
+      );
+  }
+  if (axis == "z") {
+      rotationMatrix.set(
+        Math.cos(angle),-Math.sin(angle),0,0,
+        Math.sin(angle),Math.cos(angle),0,0,
+        0,0,1,0,
+        0,0,0,1
+      );
+  }
+  return v.applyMatrix4(rotationMatrix);
 }
 
 function rescaleMat(matrix, x, y, z){
