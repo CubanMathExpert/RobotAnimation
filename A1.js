@@ -159,6 +159,13 @@ function rescaleMat(matrix, x, y, z){
   // x, y, z: float
   
   // TODO
+  let scalingMatrix = new THREE.Matrix4().set(
+    x,0,0,0,
+    0,y,0,0,
+    0,0,z,0,
+    0,0,0,1
+  )
+  return multMat(scalingMatrix, matrix);
 }
 
 class Robot {
@@ -169,6 +176,8 @@ class Robot {
     this.headRadius = 0.32;
     // Add parameters for parts
     // TODO
+    // avant bras
+    this.forearmRadius = 0.5;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -180,6 +189,7 @@ class Robot {
     this.initialize()
   }
 
+  // initialize matrices for parts 
   initialTorsoMatrix(){
     var initialTorsoMatrix = idMat4();
     initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,this.torsoHeight/2, 0);
@@ -194,6 +204,17 @@ class Robot {
     return initialHeadMatrix;
   }
 
+  //------------------------------- INIT OTHER PARTS ------------------------------------------------------
+
+  initialForearmMatrix(){
+    var initialForearmMatrix = idMat4();
+    initialForearmMatrix = translateMat(initialForearmMatrix, this.torsoRadius/2 + this.forearmRadius, this.torsoHeight/2, 0);
+
+    return initialForearmMatrix;
+  }
+
+  //-------------------------------------------------------------------------------------------------------------
+
   initialize() {
     // Torso
     var torsoGeometry = new THREE.CubeGeometry(2*this.torsoRadius, this.torsoHeight, this.torsoRadius, 64);
@@ -203,8 +224,13 @@ class Robot {
     var headGeometry = new THREE.CubeGeometry(2*this.headRadius, this.headRadius, this.headRadius);
     this.head = new THREE.Mesh(headGeometry, this.material);
 
-    // Add parts
-    // TODO
+    // Add parts 
+    //TODO 
+
+    // Forearms (can we use one geometry for both??)
+    var forearmGeometry = new THREE.SphereGeometry(this.forearmRadius);
+    this.rightForearm = new THREE.Mesh(forearmGeometry, this.material);
+    this.leftForearm = new THREE.Mesh(forearmGeometry, this.material);
 
     // Torse transformation
     this.torsoInitialMatrix = this.initialTorsoMatrix();
@@ -219,12 +245,16 @@ class Robot {
 
     // Add transformations
     // TODO
-
+    this.forearmInitialMatrix = this.initialForearmMatrix();
+    this.forearmMatrix = idMat4();
+    var matrix = multMat(this.torsoInitialMatrix, this.forearmInitialMatrix);
+    this.rightForearm.setMatrix(matrix)
 	// Add robot to scene
 	scene.add(this.torso);
     scene.add(this.head);
     // Add parts
     // TODO
+    scene.add(this.rightForearm);
   }
 
   rotateTorso(angle){
@@ -288,6 +318,7 @@ var components = [
   "Head",
   // Add parts names
   // TODO
+  ""
 ];
 var numberComponents = components.length;
 
