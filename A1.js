@@ -288,13 +288,31 @@ class Robot {
     this.torsoMatrix = multMat(torsoMatrix, this.torsoMatrix);
 
     var matrix = multMat(this.torsoMatrix, this.torsoInitialMatrix);
-    this.torso.setMatrix(matrix);
+    var tempTorsoMatrix = matrix; // temp variable holding the matrix of the torso for other uses
+    this.torso.setMatrix(matrix); // this is the torso matrix to which we should attach some pieces (arms and thighs)
 
+    // head
     var matrix2 = multMat(this.headMatrix, this.headInitialMatrix);
     matrix = multMat(matrix, matrix2);
     this.head.setMatrix(matrix);
 
     this.walkDirection = rotateVec3(this.walkDirection, angle, "y");
+
+    //lock other parts onto the torso
+    //arms (CORRECTIONS NEEDED I"M FIXING IT TO THE WRONG THING)
+    var matrix3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
+    var matrix4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
+
+    matrix = multMat(tempTorsoMatrix, matrix3);
+    this.leftArm.setMatrix(matrix);
+
+    matrix = multMat(tempTorsoMatrix, matrix4);
+    this.rightArm.setMatrix(matrix);
+
+
+    
+
+
   }
 
   moveTorso(speed){
@@ -303,6 +321,7 @@ class Robot {
     var matrix = multMat(this.torsoMatrix, this.torsoInitialMatrix);
     this.torso.setMatrix(matrix);
 
+    // head
     var matrix2 = multMat(this.headMatrix, this.headInitialMatrix);
     matrix = multMat(matrix, matrix2);
     this.head.setMatrix(matrix);
