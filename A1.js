@@ -177,7 +177,8 @@ class Robot {
     // Add parameters for parts
     // TODO
     // avant bras
-    this.forearmRadius = 0.5;
+    this.armRadius = 0.2;
+    this.farmRadius = 0.15;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -206,11 +207,19 @@ class Robot {
 
   //------------------------------- INIT OTHER PARTS ------------------------------------------------------
 
-  initialForearmMatrix(){
-    var initialForearmMatrix = idMat4();
-    initialForearmMatrix = translateMat(initialForearmMatrix, this.torsoRadius/2 + this.forearmRadius, this.torsoHeight/2, 0);
+  initialLeftArmMatrix(){
+    // local space transformations?
+    var initialLeftArmMatrix = idMat4(); 
+    initialLeftArmMatrix = rescaleMat(initialLeftArmMatrix, 1, 2, 1);
+    initialLeftArmMatrix = translateMat(initialLeftArmMatrix, 0, 2*this.armRadius, 0); // local transformation??
+    return initialLeftArmMatrix;
+  }
 
-    return initialForearmMatrix;
+  initialRightArmMatrix(){
+    var initialRightArmMatrix = idMat4();
+    initialRightArmMatrix = rescaleMat(initialRightArmMatrix, 1, 2, 1);
+    initialRightArmMatrix = translateMat(initialRightArmMatrix, 0, 2*this.armRadius, 0);
+    return initialRightArmMatrix;
   }
 
   //-------------------------------------------------------------------------------------------------------------
@@ -227,10 +236,12 @@ class Robot {
     // Add parts 
     //TODO 
 
-    // Forearms (can we use one geometry for both??)
-    var forearmGeometry = new THREE.SphereGeometry(this.forearmRadius);
-    this.rightForearm = new THREE.Mesh(forearmGeometry, this.material);
-    this.leftForearm = new THREE.Mesh(forearmGeometry, this.material);
+    // arms (can we use one geometry for both??)
+    var leftArmGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
+    this.leftArm = new THREE.Mesh(leftArmGeometry, this.material);
+
+    var rightArmGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
+    this.rightArm = new THREE.Mesh(rightArmGeometry, this.material);
 
     // Torse transformation
     this.torsoInitialMatrix = this.initialTorsoMatrix();
@@ -242,19 +253,31 @@ class Robot {
     this.headMatrix = idMat4();
     var matrix = multMat(this.torsoInitialMatrix, this.headInitialMatrix);
     this.head.setMatrix(matrix);
-
     // Add transformations
     // TODO
-    this.forearmInitialMatrix = this.initialForearmMatrix();
-    this.forearmMatrix = idMat4();
-    var matrix = multMat(this.torsoInitialMatrix, this.forearmInitialMatrix);
-    this.rightForearm.setMatrix(matrix)
+    
+    // arms (world space transformations? or relative to torso?)
+    this.leftArmInitialMatrix = this.initialLeftArmMatrix();
+    this.leftArmInitialMatrix = translateMat(this.leftArmInitialMatrix, this.torsoRadius + this.armRadius, 0, 0);
+    this.leftArmMatrix = idMat4();
+    var matrix = multMat(this.torsoInitialMatrix, this.leftArmInitialMatrix);
+    this.leftArm.setMatrix(matrix);
+
+    this.rightArmInitialMatrix = this.initialRightArmMatrix();
+    this.rightArmInitialMatrix= translateMat(this.rightArmInitialMatrix, -(this.torsoRadius + this.armRadius), 0, 0);
+    this.rightArmMatrix = idMat4();
+    var matrix = multMat(this.torsoInitialMatrix, this.rightArmInitialMatrix);
+    this.rightArm.setMatrix(matrix); // used later for locking arms to torso...
+
+
+
 	// Add robot to scene
 	scene.add(this.torso);
     scene.add(this.head);
     // Add parts
     // TODO
-    scene.add(this.rightForearm);
+    scene.add(this.leftArm);
+    scene.add(this.rightArm);
   }
 
   rotateTorso(angle){
