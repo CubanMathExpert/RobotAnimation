@@ -179,6 +179,8 @@ class Robot {
     // avant bras
     this.armRadius = 0.2;
     this.farmRadius = 0.15;
+    this.thighRadius = 0.35;
+    this.calfRadius = 0.25;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -207,6 +209,7 @@ class Robot {
 
   //------------------------------- INIT OTHER PARTS ------------------------------------------------------
 
+  // arms
   initialLeftArmMatrix(){
     // local space transformations?
     var initialLeftArmMatrix = idMat4(); 
@@ -220,6 +223,21 @@ class Robot {
     initialRightArmMatrix = rescaleMat(initialRightArmMatrix, 1, 2, 1);
     initialRightArmMatrix = translateMat(initialRightArmMatrix, 0, 2*this.armRadius, 0);
     return initialRightArmMatrix;
+  }
+
+  // forearms
+  initialLeftFarmMatrix(){
+    var initialLeftFarmMatrix = idMat4();
+    initialLeftFarmMatrix = rescaleMat(initialLeftFarmMatrix, 1, 2, 1);
+    initialLeftFarmMatrix = translateMat(initialLeftFarmMatrix, 0, 2*this.farmRadius, 0);
+    return initialLeftFarmMatrix;
+  }
+
+  initialRightFarmMatrix(){
+    var initialRightFarmMatrix = idMat4();
+    initialRightFarmMatrix = rescaleMat(initialRightFarmMatrix, 1, 2, 1);
+    initialRightFarmMatrix = translateMat(initialRightFarmMatrix, 0, 2*this.farmRadius, 0);
+    return initialRightFarmMatrix;
   }
 
   //-------------------------------------------------------------------------------------------------------------
@@ -237,11 +255,14 @@ class Robot {
     //TODO 
 
     // arms (can we use one geometry for both??)
-    var leftArmGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
-    this.leftArm = new THREE.Mesh(leftArmGeometry, this.material);
+    var armGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
+    this.leftArm = new THREE.Mesh(armGeometry, this.material);
+    this.rightArm = new THREE.Mesh(armGeometry, this.material);
 
-    var rightArmGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
-    this.rightArm = new THREE.Mesh(rightArmGeometry, this.material);
+    // forearms
+    var farmGeometry = new THREE.SphereGeometry(this.farmRadius, 64, 32);
+    this.leftFarm = new THREE.Mesh(farmGeometry, this.material);
+    this.rightFarm = new THREE.Mesh(farmGeometry, this.material);
 
     // Torse transformation
     this.torsoInitialMatrix = this.initialTorsoMatrix();
@@ -256,7 +277,7 @@ class Robot {
     // Add transformations
     // TODO
     
-    // arms (world space transformations? or relative to torso?)
+    // arms (world space transformations? or relative to torso?) // should I bind all of them to the torso?
     this.leftArmInitialMatrix = this.initialLeftArmMatrix();
     this.leftArmInitialMatrix = translateMat(this.leftArmInitialMatrix, this.torsoRadius + this.armRadius, 0, 0);
     this.leftArmMatrix = idMat4();
@@ -269,6 +290,18 @@ class Robot {
     var matrix = multMat(this.torsoInitialMatrix, this.rightArmInitialMatrix);
     this.rightArm.setMatrix(matrix); // used later for locking arms to torso...
 
+    this.leftFarmInitialMatrix = this.initialLeftFarmMatrix();
+    this.leftFarmInitialMatrix = translateMat(this.leftFarmInitialMatrix, this.torsoRadius + this.armRadius, -2*this.armRadius - this.farmRadius/2, 0);
+    this.leftFarmMatrix = idMat4();
+    var matrix = multMat(this.torsoInitialMatrix, this.leftFarmInitialMatrix);
+    this.leftFarm.setMatrix(matrix);
+
+    this.rightFarmInitialMatrix = this.initialRightFarmMatrix();
+    this.rightFarmInitialMatrix = translateMat(this.rightFarmInitialMatrix, -(this.torsoRadius + this.armRadius), -2*this.armRadius - this.farmRadius/2, 0);
+    this.rightFarmMatrix = idMat4();
+    var matrix = multMat(this.torsoInitialMatrix, this.rightFarmInitialMatrix);
+    this.rightFarm.setMatrix(matrix);
+
 
 
 	// Add robot to scene
@@ -278,6 +311,8 @@ class Robot {
     // TODO
     scene.add(this.leftArm);
     scene.add(this.rightArm);
+    scene.add(this.leftFarm);
+    scene.add(this.rightFarm);
   }
 
   rotateTorso(angle){
@@ -299,16 +334,23 @@ class Robot {
     this.walkDirection = rotateVec3(this.walkDirection, angle, "y");
 
     //TODO
-    //lock other parts onto the torso
-    //arms (CORRECTIONS NEEDED I"M FIXING IT TO THE WRONG THING)
-    var matrix3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
-    var matrix4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
+    //lock other parts onto the torso (CHECK FOR ERRORS WITH WRONG BINDING)
+    var m3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
+    var m4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
+    var m5 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
+    var m6 = multMat(this.rightFarmMatrix, this.rightFarmInitialMatrix);
 
-    matrix = multMat(tempTorsoMatrix, matrix3);
+    matrix = multMat(tempTorsoMatrix, m3);
     this.leftArm.setMatrix(matrix);
 
-    matrix = multMat(tempTorsoMatrix, matrix4);
+    matrix = multMat(tempTorsoMatrix, m4);
     this.rightArm.setMatrix(matrix);
+
+    matrix = multMat(tempTorsoMatrix, m5);
+    this.leftFarm.setMatrix(matrix);
+
+    matrix = multMat(tempTorsoMatrix, m6);
+    this.rightFarm.setMatrix(matrix);
 
   }
 
@@ -325,15 +367,23 @@ class Robot {
     this.head.setMatrix(matrix);
 
     // TODO
-    // arms
-    var matrix3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
-    var matrix4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
+    //(CHECK FOR BINDING ERRORS)
+    var m3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
+    var m4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
+    var m5 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
+    var m6 = multMat(this.rightFarmMatrix, this.rightFarmInitialMatrix);
 
-    matrix = multMat(tempTorsoMatrix, matrix3);
+    matrix = multMat(tempTorsoMatrix, m3);
     this.leftArm.setMatrix(matrix);
 
-    matrix = multMat(tempTorsoMatrix, matrix4);
+    matrix = multMat(tempTorsoMatrix, m4);
     this.rightArm.setMatrix(matrix);
+
+    matrix = multMat(tempTorsoMatrix, m5);
+    this.leftFarm.setMatrix(matrix);
+
+    matrix = multMat(tempTorsoMatrix, m6);
+    this.rightFarm.setMatrix(matrix);
 
   }
 
