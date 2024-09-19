@@ -192,7 +192,7 @@ class Robot {
     this.initialize()
   }
 
-  // initialize matrices for parts 
+  // initialize matrices for parts (WORLD SPACE)
   initialTorsoMatrix(){
     var initialTorsoMatrix = idMat4();
     initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,this.torsoHeight/2, 0);
@@ -213,36 +213,36 @@ class Robot {
   initialLeftArmMatrix(){
     // local space transformations?
     var initialLeftArmMatrix = idMat4(); 
+    initialLeftArmMatrix = translateMat(initialLeftArmMatrix, this.torsoRadius + this.armRadius, this.armRadius, 0); // local transformation??
     initialLeftArmMatrix = rescaleMat(initialLeftArmMatrix, 1, 2, 1);
-    initialLeftArmMatrix = translateMat(initialLeftArmMatrix, 0, 2*this.armRadius, 0); // local transformation??
     return initialLeftArmMatrix;
   }
 
   initialRightArmMatrix(){
     var initialRightArmMatrix = idMat4();
+    initialRightArmMatrix = translateMat(initialRightArmMatrix, -(this.torsoRadius + this.armRadius), this.armRadius, 0);
     initialRightArmMatrix = rescaleMat(initialRightArmMatrix, 1, 2, 1);
-    initialRightArmMatrix = translateMat(initialRightArmMatrix, 0, 2*this.armRadius, 0);
     return initialRightArmMatrix;
   }
 
   // forearms
   initialLeftFarmMatrix(){
     var initialLeftFarmMatrix = idMat4();
+    initialLeftFarmMatrix = translateMat(initialLeftFarmMatrix, this.torsoRadius + this.armRadius, -this.farmRadius, 0);
     initialLeftFarmMatrix = rescaleMat(initialLeftFarmMatrix, 1, 2, 1);
-    initialLeftFarmMatrix = translateMat(initialLeftFarmMatrix, 0, 2*this.farmRadius, 0);
     return initialLeftFarmMatrix;
   }
 
   initialRightFarmMatrix(){
     var initialRightFarmMatrix = idMat4();
+    initialRightFarmMatrix = translateMat(initialRightFarmMatrix, -(this.torsoRadius + this.armRadius), -this.farmRadius, 0);
     initialRightFarmMatrix = rescaleMat(initialRightFarmMatrix, 1, 2, 1);
-    initialRightFarmMatrix = translateMat(initialRightFarmMatrix, 0, 2*this.farmRadius, 0);
     return initialRightFarmMatrix;
   }
 
   //-------------------------------------------------------------------------------------------------------------
 
-  initialize() {
+  initialize() { // (LOCAL SPACE I GUESS)
     // Torso
     var torsoGeometry = new THREE.CubeGeometry(2*this.torsoRadius, this.torsoHeight, this.torsoRadius, 64);
     this.torso = new THREE.Mesh(torsoGeometry, this.material);
@@ -274,31 +274,31 @@ class Robot {
     this.headMatrix = idMat4();
     var matrix = multMat(this.torsoInitialMatrix, this.headInitialMatrix);
     this.head.setMatrix(matrix);
+
     // Add transformations
     // TODO
     
     // arms (world space transformations? or relative to torso?) // should I bind all of them to the torso?
     this.leftArmInitialMatrix = this.initialLeftArmMatrix();
-    this.leftArmInitialMatrix = translateMat(this.leftArmInitialMatrix, this.torsoRadius + this.armRadius, 0, 0);
     this.leftArmMatrix = idMat4();
     var matrix = multMat(this.torsoInitialMatrix, this.leftArmInitialMatrix);
     this.leftArm.setMatrix(matrix);
 
     this.rightArmInitialMatrix = this.initialRightArmMatrix();
-    this.rightArmInitialMatrix= translateMat(this.rightArmInitialMatrix, -(this.torsoRadius + this.armRadius), 0, 0);
     this.rightArmMatrix = idMat4();
     var matrix = multMat(this.torsoInitialMatrix, this.rightArmInitialMatrix);
     this.rightArm.setMatrix(matrix); // used later for locking arms to torso...
 
+    // forearms
     this.leftFarmInitialMatrix = this.initialLeftFarmMatrix();
-    this.leftFarmInitialMatrix = translateMat(this.leftFarmInitialMatrix, this.torsoRadius + this.armRadius, -2*this.armRadius - this.farmRadius/2, 0);
     this.leftFarmMatrix = idMat4();
+    this.leftFarmInitialMatrix = rotateMat(this.leftFarmInitialMatrix, -Math.PI / 2, "x"); // set initial position of left forearm
     var matrix = multMat(this.torsoInitialMatrix, this.leftFarmInitialMatrix);
     this.leftFarm.setMatrix(matrix);
 
     this.rightFarmInitialMatrix = this.initialRightFarmMatrix();
-    this.rightFarmInitialMatrix = translateMat(this.rightFarmInitialMatrix, -(this.torsoRadius + this.armRadius), -2*this.armRadius - this.farmRadius/2, 0);
     this.rightFarmMatrix = idMat4();
+    this.rightFarmInitialMatrix = rotateMat(this.rightFarmInitialMatrix, -Math.PI / 2, "x"); // set initial position of right forearm
     var matrix = multMat(this.torsoInitialMatrix, this.rightFarmInitialMatrix);
     this.rightFarm.setMatrix(matrix);
 
