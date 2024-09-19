@@ -195,7 +195,7 @@ class Robot {
   // initialize matrices for parts (WORLD SPACE)
   initialTorsoMatrix(){
     var initialTorsoMatrix = idMat4();
-    initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,this.torsoHeight/2, 0);
+    initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,3*this.torsoHeight/2, 0); // changed this to add legs later (elevate torso)
 
     return initialTorsoMatrix;
   }
@@ -291,14 +291,12 @@ class Robot {
 
     // forearms
     this.leftFarmInitialMatrix = this.initialLeftFarmMatrix();
-    this.leftFarmMatrix = idMat4();
-    this.leftFarmInitialMatrix = rotateMat(this.leftFarmInitialMatrix, -Math.PI / 2, "x"); // set initial position of left forearm
+    this.leftFarmMatrix = idMat4(); // set initial position of left forearm
     var matrix = multMat(this.torsoInitialMatrix, this.leftFarmInitialMatrix);
     this.leftFarm.setMatrix(matrix);
 
     this.rightFarmInitialMatrix = this.initialRightFarmMatrix();
-    this.rightFarmMatrix = idMat4();
-    this.rightFarmInitialMatrix = rotateMat(this.rightFarmInitialMatrix, -Math.PI / 2, "x"); // set initial position of right forearm
+    this.rightFarmMatrix = idMat4(); 
     var matrix = multMat(this.torsoInitialMatrix, this.rightFarmInitialMatrix);
     this.rightFarm.setMatrix(matrix);
 
@@ -398,6 +396,14 @@ class Robot {
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
     this.head.setMatrix(matrix);
+  }
+
+  // This function will rotate arms over two axes
+  rotateArms(angle, axis){
+    // forearm max angle is -2PI/3
+    // arm max angle inf x axis / pi/2 z axis
+
+
   }
 
   // Add methods for other parts
