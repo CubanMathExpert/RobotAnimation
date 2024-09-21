@@ -522,7 +522,10 @@ var components = [
   // Add parts names
   // TODO
   "Arms",
-  "Forearms"
+  "Forearms",
+  "Thighs",
+  "Calves"
+  
 ];
 var numberComponents = components.length;
 
@@ -573,12 +576,19 @@ function checkKeyboard() {
         robot.moveTorso(0.1);
         break;
       case "Head":
+
         break;
       // finish these later when arm rotation function is complete
       case "Arms":
+
         break
       case "Forearms":
         break
+      case "Thighs":
+        break
+      case "Calves":
+        break
+
       // Add more cases
       // TODO
     }
@@ -592,8 +602,14 @@ function checkKeyboard() {
         break;
       case "Head":
         break;
-      // Add more cases
-      // TODO
+      case "Arms":
+        break
+      case "Forearms":
+        break
+      case "Thighs":
+        break
+      case "Calves":
+        break
     }
   }
 
