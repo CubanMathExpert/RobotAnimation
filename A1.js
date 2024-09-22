@@ -174,13 +174,13 @@ class Robot {
     this.torsoHeight = 1.5;
     this.torsoRadius = 0.75;
     this.headRadius = 0.32;
-    // Add parameters for parts
-    // TODO
-    // avant bras
     this.armRadius = 0.2;
     this.farmRadius = 0.15;
     this.thighRadius = 0.25;
     this.calfRadius = 0.18;
+    // rotation containers (maybe)
+    this.x_currentLeftFarmAngle = 0;
+    this.x_currentRightFarmAngle = 0;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -192,7 +192,7 @@ class Robot {
     this.initialize()
   }
 
-  // initialize matrices for parts (WORLD SPACE IT SEEMS)
+  // initialize matrices for parts (the seem to rotate around the middle of the torso)
   initialTorsoMatrix(){
     var initialTorsoMatrix = idMat4();
     initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,this.torsoHeight/2 + 4*this.thighRadius + 4*this.calfRadius, 0); 
@@ -322,6 +322,7 @@ class Robot {
     this.leftArmMatrix = idMat4();
     var matrix = multMat(this.torsoInitialMatrix, this.leftArmInitialMatrix);
     this.leftArm.setMatrix(matrix);
+    this.leftArm.matri
 
     this.rightArmInitialMatrix = this.initialRightArmMatrix();
     this.rightArmMatrix = idMat4();
@@ -493,40 +494,64 @@ class Robot {
     this.head.setMatrix(matrix);
   }
 
-  // This function will rotate arms over two axes
-  rotateArms(angle, axis){
+  // This function will rotate proximal limbs (arms and legs)
+  rotateProximalLimb(angle, axis) {
     // forearm max angle is -2PI/3
     // arm max angle inf x axis / pi/2 z axis
     var leftArmMatrix = this.leftArmMatrix;
-    //var leftFarmMatrix = this.leftFarmMatrix;
-
     this.leftArmMatrix = idMat4();
 
+    // arm transformation
     this.leftArmMatrix = translateMat(this.leftArmMatrix, 0, -this.torsoHeight/2, 0);
-    //this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, -this.torsoHeight/2, 0);
-
+    if (axis == "z")
+      this.leftArmMatrix = translateMat(this.leftArmMatrix, -(this.torsoRadius + this.armRadius), 0, 0);
     this.leftArmMatrix = rotateMat(this.leftArmMatrix, angle, axis);
-    //this.leftFarmMatrix = rotateMat(this.leftFarmMatrix, angle, axis);
-
     this.leftArmMatrix = translateMat(this.leftArmMatrix, 0, this.torsoHeight/2, 0); 
-    //this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, this.torsoHeight/2, 0);
-
+    if (axis == "z")
+      this.leftArmMatrix = translateMat(this.leftArmMatrix, (this.torsoRadius + this.armRadius), 0, 0);
     this.leftArmMatrix = multMat(leftArmMatrix, this.leftArmMatrix);
-    //this.leftFarmMatrix = multMat(leftFarmMatrix, this.leftFarmMatrix);
 
+    // reatach to the torso after transform?
     var matrix = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
     this.leftArm.setMatrix(matrix);
 
-    //var matrix2 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
-    //matrix2 = multMat(this.torsoMatrix, matrix2);
-    //matrix2 = multMat(this.torsoInitialMatrix, matrix2);
-    //this.leftFarm.setMatrix(matrix);
+    // Forearm transformation to follow the arm
+    this.leftFarmMatrix = idMat4();
+    this.leftFarmMatrix = rotateMat(this.leftFarmMatrix, this.x_currentLeftFarmAngle, "x");
+
+    // Apply the arm's transformation to the forearm
+    this.leftFarmMatrix = multMat(this.leftArmMatrix, this.leftFarmMatrix);
+    
+
+    // Set the final transformation for the forearm in torso space
+    var forearmMatrix = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
+    forearmMatrix = multMat(this.torsoMatrix, forearmMatrix);
+    forearmMatrix = multMat(this.torsoInitialMatrix, forearmMatrix);
+
+    // Apply the final transformation matrix to the forearm
+    this.leftFarm.setMatrix(forearmMatrix);
+
   }
 
-  rotateFarm(angle){
-    
+  rotateDistalLimb(angle){
+    //forearm rotations will always be around x axis
+    var leftFarmMatrix = this.leftFarmMatrix;
+    this.leftFarmMatrix = idMat4();
+
+    this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, this.farmRadius, 0);
+    this.leftFarmMatrix = rotateMat(this.leftFarmMatrix, angle, "x");
+    this.x_currentLeftFarmAngle += angle; // keep track of angle of distal limb
+    this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, -this.farmRadius, 0);
+    this.leftFarmMatrix = multMat(leftFarmMatrix, this.leftFarmMatrix);
+
+    var farmMatrix = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
+    farmMatrix = multMat(this.torsoMatrix, farmMatrix);
+    farmMatrix = multMat(this.torsoInitialMatrix, farmMatrix);
+
+    this.leftFarm.setMatrix(farmMatrix);
+
   }
 
   // Add methods for other parts
@@ -549,7 +574,9 @@ var components = [
   "Head",
   // Add parts names
   // TODO
-  "LeftArm"
+  "LeftArm",
+  "LeftForearm"
+
 ];
 var numberComponents = components.length;
 
@@ -603,9 +630,10 @@ function checkKeyboard() {
         break;
       // finish these later when arm rotation function is complete
       case "LeftArm":
-        robot.rotateArms(0.1, "x");
+        robot.rotateProximalLimb(-0.1, "x");
         break;
-      case "Forearms":
+      case "LeftForearm":
+        robot.rotateDistalLimb(0.1);
         break;
       // Add more cases
       // TODO
@@ -621,7 +649,10 @@ function checkKeyboard() {
       case "Head":
         break;
       case "LeftArm":
-        robot.rotateArms(-0.1, "x")
+        robot.rotateProximalLimb(0.1, "x")
+        break;
+      case "LeftForearm":
+        robot.rotateDistalLimb(-0.1);
         break;
       // Add more cases
       // TODO
@@ -639,6 +670,9 @@ function checkKeyboard() {
         break;
       // Add more cases
       // TODO
+      case "LeftArm":
+        robot.rotateProximalLimb(-0.1, "z");
+        break;
     }
   }
 
@@ -653,6 +687,9 @@ function checkKeyboard() {
         break;
       // Add more cases
       // TODO
+      case "LeftArm":
+        robot.rotateProximalLimb(0.1, "z");
+        break;
     }
     }
 
