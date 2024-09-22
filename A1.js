@@ -362,7 +362,7 @@ class Robot {
     this.rightCalf.setMatrix(matrix);
 
 	// Add robot to scene
-	scene.add(this.torso);
+	  scene.add(this.torso);
     scene.add(this.head);
     // Add parts
     // TODO
@@ -497,8 +497,36 @@ class Robot {
   rotateArms(angle, axis){
     // forearm max angle is -2PI/3
     // arm max angle inf x axis / pi/2 z axis
+    var leftArmMatrix = this.leftArmMatrix;
+    //var leftFarmMatrix = this.leftFarmMatrix;
 
+    this.leftArmMatrix = idMat4();
 
+    this.leftArmMatrix = translateMat(this.leftArmMatrix, 0, -this.torsoHeight/2, 0);
+    //this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, -this.torsoHeight/2, 0);
+
+    this.leftArmMatrix = rotateMat(this.leftArmMatrix, angle, axis);
+    //this.leftFarmMatrix = rotateMat(this.leftFarmMatrix, angle, axis);
+
+    this.leftArmMatrix = translateMat(this.leftArmMatrix, 0, this.torsoHeight/2, 0); 
+    //this.leftFarmMatrix = translateMat(this.leftFarmMatrix, 0, this.torsoHeight/2, 0);
+
+    this.leftArmMatrix = multMat(leftArmMatrix, this.leftArmMatrix);
+    //this.leftFarmMatrix = multMat(leftFarmMatrix, this.leftFarmMatrix);
+
+    var matrix = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
+    matrix = multMat(this.torsoMatrix, matrix);
+    matrix = multMat(this.torsoInitialMatrix, matrix);
+    this.leftArm.setMatrix(matrix);
+
+    //var matrix2 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
+    //matrix2 = multMat(this.torsoMatrix, matrix2);
+    //matrix2 = multMat(this.torsoInitialMatrix, matrix2);
+    //this.leftFarm.setMatrix(matrix);
+  }
+
+  rotateFarm(angle){
+    
   }
 
   // Add methods for other parts
@@ -521,11 +549,15 @@ var components = [
   "Head",
   // Add parts names
   // TODO
+<<<<<<< HEAD
   "Arms",
   "Forearms",
   "Thighs",
   "Calves"
   
+=======
+  "LeftArm"
+>>>>>>> 87a479b38af743aee87484f1ca4c512e2bd7d532
 ];
 var numberComponents = components.length;
 
@@ -579,6 +611,7 @@ function checkKeyboard() {
 
         break;
       // finish these later when arm rotation function is complete
+<<<<<<< HEAD
       case "Arms":
 
         break
@@ -589,6 +622,13 @@ function checkKeyboard() {
       case "Calves":
         break
 
+=======
+      case "LeftArm":
+        robot.rotateArms(0.1, "x");
+        break;
+      case "Forearms":
+        break;
+>>>>>>> 87a479b38af743aee87484f1ca4c512e2bd7d532
       // Add more cases
       // TODO
     }
@@ -602,6 +642,7 @@ function checkKeyboard() {
         break;
       case "Head":
         break;
+<<<<<<< HEAD
       case "Arms":
         break
       case "Forearms":
@@ -610,6 +651,13 @@ function checkKeyboard() {
         break
       case "Calves":
         break
+=======
+      case "LeftArm":
+        robot.rotateArms(-0.1, "x")
+        break;
+      // Add more cases
+      // TODO
+>>>>>>> 87a479b38af743aee87484f1ca4c512e2bd7d532
     }
   }
 
