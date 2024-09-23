@@ -629,8 +629,9 @@ class Robot {
     this.leftThigh.setMatrix(thighMatrix);
 
     this.leftCalfMatrix = idMat4();
-    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x");
-    
+    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x"); // remake rotation you previously had
+
+    // attach the thigh and calf
     this.leftCalfMatrix = multMat(this.leftThighMatrix, this.leftCalfMatrix);
 
     var calfMatrix = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
@@ -644,10 +645,10 @@ class Robot {
     var leftCalfMatrix = this.leftCalfMatrix;
     this.leftCalfMatrix = idMat4();
 
-    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoRadius/2, 0);
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius, 0);
     this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, angle, "x");
     this.x_currentLeftCalfAngle += angle;
-    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoRadius/2, 0);
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius, 0);
     this.leftCalfMatrix = multMat(leftCalfMatrix, this.leftCalfMatrix);
 
     var calfMatrix = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
@@ -781,6 +782,9 @@ function checkKeyboard() {
         break;
       case "RightForearm":
         robot.rotateRightFarm(0.1);
+        break;
+      case "LeftThigh":
+        robot.rotateLeftThigh(0.1);
         break;
       case "LeftCalf":
         robot.rotateLeftCalf(0.1);
