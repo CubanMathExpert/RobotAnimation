@@ -670,7 +670,7 @@ class Robot {
     this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, (this.torsoRadius/2 + this.thighRadius), 0);
     this.rightThighMatrix = rotateMat(this.rightThighMatrix, angle, "x");
     this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, -(this.torsoRadius/2 + this.thighRadius), 0);
-    this.rightThighMatrix = multMat(leftThighMatrix, this.rightThighMatrix);
+    this.rightThighMatrix = multMat(rightThighMatrix, this.rightThighMatrix);
 
     //reatach to torso and set matrix
     var thighMatrix = multMat(this.rightThighMatrix, this.rightThighInitialMatrix);
@@ -707,6 +707,10 @@ class Robot {
     calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
 
     this.rightCalf.setMatrix(calfMatrix);
+  }
+
+  runAnimation() {
+    
   }
 
   // Add methods for other parts
