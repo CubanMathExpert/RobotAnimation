@@ -259,15 +259,17 @@ class Robot {
   // calves
   initialLeftCalfMatrix(){
     var initialLeftCalfMatrix = idMat4();
-    initialLeftCalfMatrix = translateMat(initialLeftCalfMatrix, this.torsoRadius/2, -(this.torsoRadius/2 + this.thighRadius + this.calfRadius * 2.4), 0);
     initialLeftCalfMatrix = rescaleMat(initialLeftCalfMatrix, 1, 2, 1);
+    initialLeftCalfMatrix = translateMat(initialLeftCalfMatrix, this.torsoRadius/2, -this.torsoHeight/2 - 4*this.thighRadius - 2*this.calfRadius, 0);
     return initialLeftCalfMatrix;
   }
 
   initialRightCalfMatrix(){
     var initialRightCalfMatrix = idMat4();
-    initialRightCalfMatrix = translateMat(initialRightCalfMatrix, -this.torsoRadius/2, -(this.torsoRadius/2 + this.thighRadius + this.calfRadius * 2.4), 0);
     initialRightCalfMatrix = rescaleMat(initialRightCalfMatrix, 1, 2, 1);
+    initialRightCalfMatrix = translateMat(initialRightCalfMatrix, -this.torsoRadius/2, -this.torsoHeight/2 - 4*this.thighRadius - 2*this.calfRadius, 0);
+    
+    
     return initialRightCalfMatrix;
   }
 
@@ -628,27 +630,28 @@ class Robot {
     thighMatrix = multMat(this.torsoInitialMatrix, thighMatrix);
     this.leftThigh.setMatrix(thighMatrix);
 
+    // calf transformation to follow the thigh
     this.leftCalfMatrix = idMat4();
-    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x"); // remake rotation you previously had
-
-    // attach the thigh and calf
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
+    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x");
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.leftCalfMatrix = multMat(this.leftThighMatrix, this.leftCalfMatrix);
-
+    
     var calfMatrix = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
     calfMatrix = multMat(this.torsoMatrix, calfMatrix);
     calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
-    this.leftCalf.setMatrix(calfMatrix);
 
+    this.leftCalf.setMatrix(calfMatrix);
   }
 
   rotateLeftCalf(angle){
     var leftCalfMatrix = this.leftCalfMatrix;
     this.leftCalfMatrix = idMat4();
 
-    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius, 0);
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
     this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, angle, "x");
     this.x_currentLeftCalfAngle += angle;
-    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius, 0);
+    this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.leftCalfMatrix = multMat(leftCalfMatrix, this.leftCalfMatrix);
 
     var calfMatrix = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
