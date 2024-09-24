@@ -667,6 +667,58 @@ class Robot {
     this.leftCalf.setMatrix(calfMatrix);
   }
 
+  rotateRightThigh(angle){
+    //save previous transforms in new variable
+    var rightThighMatrix = this.rightThighMatrix;
+    this.rightThighMatrix = idMat4();
+
+    //make the actual transform
+    this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, (this.torsoRadius/2 + this.thighRadius), 0);
+    this.rightThighMatrix = rotateMat(this.rightThighMatrix, angle, "x");
+    this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, -(this.torsoRadius/2 + this.thighRadius), 0);
+    this.rightThighMatrix = multMat(rightThighMatrix, this.rightThighMatrix);
+
+    //reatach to torso and set matrix
+    var thighMatrix = multMat(this.rightThighMatrix, this.rightThighInitialMatrix);
+    thighMatrix = multMat(this.torsoMatrix, thighMatrix);
+    thighMatrix = multMat(this.torsoInitialMatrix, thighMatrix);
+    this.rightThigh.setMatrix(thighMatrix);
+
+    // calf transformation to follow the thigh
+    this.rightCalfMatrix = idMat4();
+    this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
+    this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, this.x_currentRightCalfAngle, "x");
+    this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
+    this.rightCalfMatrix = multMat(this.rightThighMatrix, this.rightCalfMatrix);
+    
+    var calfMatrix = multMat(this.rightCalfMatrix, this.rightCalfInitialMatrix);
+    calfMatrix = multMat(this.torsoMatrix, calfMatrix);
+    calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
+
+    this.rightCalf.setMatrix(calfMatrix);
+  }
+
+  rotateRightCalf(angle){
+    var rightCalfMatrix = this.rightCalfMatrix;
+    this.rightCalfMatrix = idMat4();
+
+    this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
+    this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, angle, "x");
+    this.x_currentRightCalfAngle += angle;
+    this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
+    this.rightCalfMatrix = multMat(rightCalfMatrix, this.rightCalfMatrix);
+
+    var calfMatrix = multMat(this.rightCalfMatrix, this.rightCalfInitialMatrix);
+    calfMatrix = multMat(this.torsoMatrix, calfMatrix);
+    calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
+
+    this.rightCalf.setMatrix(calfMatrix);
+  }
+
+  runAnimation() {
+    
+  }
+
   // Add methods for other parts
   // TODO
 
@@ -764,6 +816,12 @@ function checkKeyboard() {
       case "LeftCalf":
         robot.rotateLeftCalf(-0.1);
         break;
+      case "RightThigh":
+        robot.rotateRightThigh(-0.1);
+        break;
+      case "RightCalf":
+        robot.rotateRightCalf(-0.1);
+        break;
     }
   }
 
@@ -793,6 +851,12 @@ function checkKeyboard() {
         break;
       case "LeftCalf":
         robot.rotateLeftCalf(0.1);
+        break;
+      case  "RightThigh":
+        robot.rotateRightThigh(0.1);
+        break;
+      case "RightCalf":
+        robot.rotateRightCalf(0.1);
         break;
     }
   }
