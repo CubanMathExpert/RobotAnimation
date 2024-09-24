@@ -485,13 +485,19 @@ class Robot {
 
   }
 
-  rotateHead(angle){
+  rotateHead(angle,axis){
     var headMatrix = this.headMatrix;
 
     this.headMatrix = idMat4();
-    this.headMatrix = rotateMat(this.headMatrix, angle, "y");
+    //translate to rotate
+    this.headMatrix = translateMat(this.headMatrix, 0, -(this.torsoHeight/2+this.headRadius/2), 0);
+    //rotate the head 
+    if (axis == "x")  this.headMatrix = rotateMat(this.headMatrix, angle, "x");
+    else if (axis == "y") this.headMatrix = rotateMat(this.headMatrix, angle, "y");
+    //translate back to original position
+    this.headMatrix = translateMat(this.headMatrix, 0, (this.torsoHeight/2+this.headRadius/2), 0);
     this.headMatrix = multMat(headMatrix, this.headMatrix);
-
+    // reatach to the torso after transform 
     var matrix = multMat(this.headMatrix, this.headInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
@@ -731,8 +737,6 @@ var selectedRobotComponent = 0;
 var components = [
   "Torso",
   "Head",
-  // Add parts names
-  // TODO
   "LeftArm",
   "LeftForearm",
   "RightArm",
@@ -792,9 +796,8 @@ function checkKeyboard() {
         robot.moveTorso(0.1);
         break;
       case "Head":
-
+        robot.rotateHead(0.1, "x");
         break;
-      // finish these later when arm rotation function is complete
       case "LeftArm":
         robot.rotateLeftArm(-0.1, "x");
         break;
@@ -819,9 +822,6 @@ function checkKeyboard() {
       case "RightCalf":
         robot.rotateRightCalf(-0.1);
         break;
-
-      // Add more cases
-      // TODO
     }
   }
 
@@ -832,6 +832,7 @@ function checkKeyboard() {
         robot.moveTorso(-0.1);
         break;
       case "Head":
+        robot.rotateHead(-0.1, "x");
         break;
       case "LeftArm":
         robot.rotateLeftArm(0.1, "x")
@@ -857,8 +858,6 @@ function checkKeyboard() {
       case "RightCalf":
         robot.rotateRightCalf(0.1);
         break;
-      // Add more cases
-      // TODO
     }
   }
 
@@ -869,10 +868,8 @@ function checkKeyboard() {
         robot.rotateTorso(0.1);
         break;
       case "Head":
-        robot.rotateHead(0.1);
+        robot.rotateHead(0.1,"y");
         break;
-      // Add more cases
-      // TODO
       case "LeftArm":
         robot.rotateLeftArm(-0.1, "z");
         break;
@@ -890,10 +887,8 @@ function checkKeyboard() {
         robot.rotateTorso(-0.1);
         break;
       case "Head":
-        robot.rotateHead(-0.1);
+        robot.rotateHead(-0.1,"y");
         break;
-      // Add more cases
-      // TODO
       case "LeftArm":
         robot.rotateLeftArm(0.1, "z");
         break;
