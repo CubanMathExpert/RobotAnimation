@@ -179,8 +179,16 @@ class Robot {
     this.thighRadius = 0.25;
     this.calfRadius = 0.18;
     // rotation containers (maybe)
+
+    this.x_currentLeftArmAngle = 0;
+    this.x_currentRightArmAngle = 0
+
     this.x_currentLeftFarmAngle = 0;
     this.x_currentRightFarmAngle = 0;
+
+    this.x_currentLeftThighAngle = 0;
+    this.x_currentRightThighAngle = 0;
+
     this.x_currentLeftCalfAngle = 0;
     this.x_currentRightCalfAngle = 0;
 
@@ -709,7 +717,11 @@ class Robot {
     this.rightCalf.setMatrix(calfMatrix);
   }
 
-  runAnimation() {
+  // the speeds are the swing speeds
+  forwardWalkAnimation(legSpeed, calfSpeed, armSpeed) {
+    this.x_currentLeftFarmAngle = 3*Math.PI/2;
+    this.x_currentRightFarmAngle = 3*Math.PI/2;
+    
     
   }
 
@@ -790,6 +802,7 @@ function checkKeyboard() {
     switch (components[selectedRobotComponent]){
       case "Torso":
         robot.moveTorso(0.1);
+        robot.forwardWalkAnimation();
         break;
       case "Head":
         break;
