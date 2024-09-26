@@ -192,6 +192,10 @@ class Robot {
     this.x_currentLeftCalfAngle = 0;
     this.x_currentRightCalfAngle = 0;
 
+    this.thighAnimAngle = 0.1;
+    this.calfAnimAngle = 0.1;
+    this.armAnimAngle = 0.1;
+
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
 
@@ -508,6 +512,7 @@ class Robot {
 
   // This function will rotate proximal limbs (arms and legs)
   rotateLeftArm(angle, axis) {
+    this.x_currentLeftArmAngle += angle;
     // forearm max angle is -2PI/3
     // arm max angle inf x axis / pi/2 z axis
     var leftArmMatrix = this.leftArmMatrix;
@@ -565,6 +570,7 @@ class Robot {
   }
 
   rotateRightArm(angle, axis) {
+    this.x_currentRightArmAngle += angle;
     // forearm max angle is -2PI/3
     // arm max angle inf x axis / pi/2 z axis
     var rightArmMatrix = this.rightArmMatrix;
@@ -622,6 +628,7 @@ class Robot {
   }
 
   rotateLeftThigh(angle){
+    this.x_currentLeftThighAngle += angle;
     //save previous transforms in new variable
     var leftThighMatrix = this.leftThighMatrix;
     this.leftThighMatrix = idMat4();
@@ -670,6 +677,7 @@ class Robot {
   }
 
   rotateRightThigh(angle){
+    this.x_currentRightThighAngle += angle;
     //save previous transforms in new variable
     var rightThighMatrix = this.rightThighMatrix;
     this.rightThighMatrix = idMat4();
@@ -718,10 +726,36 @@ class Robot {
   }
 
   // the speeds are the swing speeds
-  forwardWalkAnimation(legSpeed, calfSpeed, armSpeed) {
-    this.x_currentLeftFarmAngle = 3*Math.PI/2;
-    this.x_currentRightFarmAngle = 3*Math.PI/2;
+  forwardWalkAnimation() {
+    //initialforearm angle
+    this.x_currentLeftFarmAngle = -Math.PI/4;
+    this.x_currentRightFarmAngle = -Math.PI/4;
+
+    let maxThighAngle = 0.6;
+    let maxArmAngle = 0.5;
+    //console.log("Right: ", this.x_currentRightThighAngle, "Left: ", this.x_currentLeftThighAngle, "Angle: ", this.thighAnimAngle);
     
+    // thighs
+    robot.rotateLeftThigh(this.thighAnimAngle);
+    robot.rotateRightThigh(-this.thighAnimAngle);
+    if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle){
+      this.thighAnimAngle = this.thighAnimAngle * -1;
+      //console.log("we are over the limit");
+    }
+
+    // calf
+    robot.rotateLeftCalf(this.calfAnimAngle);
+    robot.rotateRightCalf(-this.calfAnimAngle);
+    if (this.x_currentLeftCalfAngle < -0.5 || this.x_currentLeftCalfAngle > 0){
+      this.calfAnimAngle = this.calfAnimAngle * -1;
+    }
+
+    // arm
+    robot.rotateLeftArm(this.armAnimAngle, "x");
+    robot.rotateRightArm(-this.armAnimAngle, "x");
+    if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle){
+      this.armAnimAngle = this.armAnimAngle * -1;
+    }
     
   }
 
