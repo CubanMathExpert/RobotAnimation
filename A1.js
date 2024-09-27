@@ -168,6 +168,21 @@ function rescaleMat(matrix, x, y, z){
   return multMat(scalingMatrix, matrix);
 }
 
+var lastCalledTime;
+var fps;
+
+function requestAnimFrame() {
+
+  if(!lastCalledTime) {
+     lastCalledTime = Date.now();
+     fps = 0;
+     return;
+  }
+  delta = (Date.now() - lastCalledTime)/1000;
+  lastCalledTime = Date.now();
+  fps = 1/delta;
+}
+
 class Robot {
   constructor() {
     // Geometry
