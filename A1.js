@@ -207,9 +207,9 @@ class Robot {
     this.x_currentLeftCalfAngle = 0;
     this.x_currentRightCalfAngle = 0;
 
-    this.thighAnimAngle = 0.1;
-    this.calfAnimAngle = 0.1;
-    this.armAnimAngle = 0.1;
+    this.thighAnimAngle = 0.05;
+    this.calfAnimAngle = 0.05;
+    this.armAnimAngle = 0.05;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -748,7 +748,6 @@ class Robot {
 
     let maxThighAngle = 0.6;
     let maxArmAngle = 0.5;
-    //console.log("Right: ", this.x_currentRightThighAngle, "Left: ", this.x_currentLeftThighAngle, "Angle: ", this.thighAnimAngle);
     
     // thighs
     robot.rotateLeftThigh(this.thighAnimAngle);
@@ -771,6 +770,9 @@ class Robot {
     if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle){
       this.armAnimAngle = this.armAnimAngle * -1;
     }
+
+    // up and down movement of the robot
+    
     
   }
 
@@ -850,7 +852,7 @@ function checkKeyboard() {
   if (keyboard.pressed("w")){
     switch (components[selectedRobotComponent]){
       case "Torso":
-        robot.moveTorso(0.1);
+        robot.moveTorso(0.05);
         robot.forwardWalkAnimation();
         break;
       case "Head":
