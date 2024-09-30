@@ -206,6 +206,8 @@ class Robot {
 
     this.x_currentLeftCalfAngle = 0;
     this.x_currentRightCalfAngle = 0;
+    this.x_currentHeadRotation= 0;  // Initial pitch (rotation around X-axis)
+    this.y_currentHeadRotation = 0;  // Initial yaw (rotation around Y-axis)
 
     this.thighAnimAngle = 0.1;
     this.calfAnimAngle = 0.1;
@@ -512,13 +514,25 @@ class Robot {
 
   }
 
-  rotateHead(angle){
+  rotateHead(angle,axis){
     var headMatrix = this.headMatrix;
 
+    // Save the current rotation
+    if (axis === "x") {
+      this.x_currentHeadRotation += angle;  // Track pitch rotation
+  } else if (axis === "y") {
+      this.y_currentHeadRotation += angle;  // Track yaw rotation
+  }
     this.headMatrix = idMat4();
-    this.headMatrix = rotateMat(this.headMatrix, angle, "y");
+    //translate to rotate
+    this.headMatrix = translateMat(this.headMatrix, 0, -(this.torsoHeight/2+this.headRadius), 0);
+    //rotate the head 
+    if (axis == "x")  this.headMatrix = rotateMat(this.headMatrix, angle, "x");
+    else if (axis == "y") this.headMatrix = rotateMat(this.headMatrix, angle, "y");
+    //translate back to original position
+    this.headMatrix = translateMat(this.headMatrix, 0, (this.torsoHeight/2+this.headRadius), 0);
     this.headMatrix = multMat(headMatrix, this.headMatrix);
-
+    // reatach to the torso after transform 
     var matrix = multMat(this.headMatrix, this.headInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
@@ -777,9 +791,72 @@ class Robot {
   // Add methods for other parts
   // TODO
 
-  look_at(point){
-    // Compute and apply the correct rotation of the head and the torso for the robot to look at @point
-      //TODO
+  look_at(point) {
+    // Get the world position of the head
+    var headPos = new THREE.Vector3();
+    this.head.getWorldPosition(headPos);
+
+    // Compute the direction vector from the head to the target point
+    var targetDirection = new THREE.Vector3();
+    targetDirection.subVectors(point, headPos).normalize();
+
+    // Project the target direction onto the XZ plane for horizontal yaw calculation
+    var projectedTargetDirection = new THREE.Vector3(targetDirection.x, 0, targetDirection.z).normalize();
+
+    // Normalize walkDirection for calculation
+    var currentWalkDirection = new THREE.Vector3(this.walkDirection.x, 0, this.walkDirection.z).normalize();
+
+    // Calculate the yaw difference (rotation around Y-axis) between walk direction and target direction
+    var targetYaw = Math.atan2(projectedTargetDirection.x, projectedTargetDirection.z);
+    var currentYaw = Math.atan2(currentWalkDirection.x, currentWalkDirection.z);
+
+    // Calculate yaw difference and clamp it
+    var yawDifference = targetYaw - currentYaw;
+
+    // Calculate horizontal distance and height difference for pitch
+    var horizontalDistance = Math.sqrt(
+        (point.x - headPos.x) ** 2 + 
+        (point.z - headPos.z) ** 2
+    );
+    
+    var heightDifference = point.y - headPos.y;
+
+    // Calculate the target pitch (rotation around X-axis)
+    var targetPitch = Math.atan2(heightDifference, horizontalDistance);  // Use atan2 for pitch calculation
+    var currentPitch = this.x_currentHeadRotation;  // Get the current pitch (around X-axis)
+
+    // Calculate the pitch difference for head rotation
+    var pitchDifference = -targetPitch - currentPitch; // Adjusted to find the correct difference
+
+    if (point.y > 0.1) {
+        // Calculate the Y-axis (yaw) angle using atan2 for stability
+        var targetYaw2 = Math.atan2(headPos.x - point.x, point.y - headPos.y);
+        var currentYaw2 = this.y_currentHeadRotation; // Get the current yaw (around Y-axis)
+
+        // Calculate yaw difference
+        var yawDifference2 = targetYaw2 - currentYaw2;
+
+        // Apply rotations
+        this.rotateHead(pitchDifference, "x"); 
+        this.rotateHead(yawDifference2, "y");
+    } else {
+        // When looking down, reset the yaw to 0
+        this.rotateHead(-this.y_currentHeadRotation, "y"); // Reset yaw
+        
+        // Rotate torso based on yaw difference
+        this.rotateTorso(yawDifference);
+
+        // Rotate head based on pitch difference
+        this.rotateHead(pitchDifference, "x"); 
+    }
+}
+
+
+  clampAngle(angle) {
+    // Ensure the angle is between -π and π
+    while (angle > Math.PI) angle -= 2 * Math.PI;
+    while (angle < -Math.PI) angle += 2 * Math.PI;
+    return angle;
   }
 }
 
@@ -792,8 +869,6 @@ var selectedRobotComponent = 0;
 var components = [
   "Torso",
   "Head",
-  // Add parts names
-  // TODO
   "LeftArm",
   "LeftForearm",
   "RightArm",
@@ -854,9 +929,8 @@ function checkKeyboard() {
         robot.forwardWalkAnimation();
         break;
       case "Head":
-
+        robot.rotateHead(0.1, "x");
         break;
-      // finish these later when arm rotation function is complete
       case "LeftArm":
         robot.rotateLeftArm(-0.1, "x");
         break;
@@ -881,9 +955,6 @@ function checkKeyboard() {
       case "RightCalf":
         robot.rotateRightCalf(-0.1);
         break;
-
-      // Add more cases
-      // TODO
     }
   }
 
@@ -894,6 +965,7 @@ function checkKeyboard() {
         robot.moveTorso(-0.1);
         break;
       case "Head":
+        robot.rotateHead(-0.1, "x");
         break;
       case "LeftArm":
         robot.rotateLeftArm(0.1, "x")
@@ -931,10 +1003,8 @@ function checkKeyboard() {
         robot.rotateTorso(0.1);
         break;
       case "Head":
-        robot.rotateHead(0.1);
+        robot.rotateHead(0.1, "y");
         break;
-      // Add more cases
-      // TODO
       case "LeftArm":
         robot.rotateLeftArm(-0.1, "z");
         break;
@@ -952,10 +1022,8 @@ function checkKeyboard() {
         robot.rotateTorso(-0.1);
         break;
       case "Head":
-        robot.rotateHead(-0.1);
+        robot.rotateHead(-0.1, "y");
         break;
-      // Add more cases
-      // TODO
       case "LeftArm":
         robot.rotateLeftArm(0.1, "z");
         break;
