@@ -827,7 +827,7 @@ class Robot {
 
     // Calculate the pitch difference for head rotation
     var pitchDifference = -targetPitch - currentPitch; // Adjusted to find the correct difference
-
+    var isreseted = false;
     if (point.y > 0.1) {
         // Calculate the Y-axis (yaw) angle using atan2 for stability
         var targetYaw2 = Math.atan2(headPos.x - point.x, point.y - headPos.y);
@@ -839,7 +839,12 @@ class Robot {
         // Apply rotations
         this.rotateHead(pitchDifference, "x"); 
         this.rotateHead(yawDifference2, "y");
+        isreseted =true;
     } else {
+         if (isreseted == true) {
+          this.rotateHead(-this.x_currentHeadRotation, "x"); 
+          isreseted = false;
+         }
         // When looking down, reset the yaw to 0
         this.rotateHead(-this.y_currentHeadRotation, "y"); // Reset yaw
         
