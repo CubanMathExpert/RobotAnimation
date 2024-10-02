@@ -781,6 +781,30 @@ class Robot {
     
   }
 
+  checkAnchorPoint(){
+    // the lowest point of the robot must be touching the floor at all times
+    /* 
+      for the same part if the left is lower than the right then we take the lowest offset
+      because that will be the part closest to the ground
+     */
+    let thighLength = 4 * this.thighRadius;
+    let calfLength = 4 * this.calfRadius;
+
+    // thighs
+    // left thigh
+    var offsetLeftThigh = thighLength - thighLength * Math.cos(this.x_currentLeftThighAngle);
+    // right thigh
+    var offsetRightThigh = thighLength - thighLength * Math.cos(this.x_currentRightThighAngle);
+
+    // find real offset and offset the whole robot
+    var realThighOffset = Math.max(offsetRightThigh, offsetLeftThigh);
+    this.torsoMatrix = translateMat(this.torsoMatrix, 0, -realThighOffset, 0);
+
+    // undo the previous translation so you can make a new one 
+
+
+  }
+
   look_at(point) {
     var localHeadPos = new THREE.Vector3(0, 0, 0);
     var headPos = new THREE.Vector3();
