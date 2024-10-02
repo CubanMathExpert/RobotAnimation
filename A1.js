@@ -71,8 +71,6 @@ function translateMat(matrix, x, y, z) {
   // Apply translation [x, y, z] to @matrix
   // matrix: THREE.Matrix4
   // x, y, z: float
-
-  // TODO
   var m = new THREE.Matrix4();
   m.set(
     1,0,0,x,
@@ -88,8 +86,6 @@ function rotateMat(matrix, angle, axis){
   // matrix: THREE.Matrix3
   // angle: float
   // axis: string "x", "y" or "z"
-  
-  // TODO
   let rotationMatrix = new THREE.Matrix4();
   if (axis == "x") {
       rotationMatrix.set(
@@ -123,8 +119,6 @@ function rotateVec3(v, angle, axis){
   // v: THREE.Vector3
   // angle: float
   // axis: string "x", "y" or "z"
-  
-  // TODO
   let rotationMatrix = new THREE.Matrix4();
   if (axis == "x") {
       rotationMatrix.set(
@@ -157,8 +151,6 @@ function rescaleMat(matrix, x, y, z){
   // Apply scaling @x, @y and @z to @matrix
   // matrix: THREE.Matrix3
   // x, y, z: float
-  
-  // TODO
   let scalingMatrix = new THREE.Matrix4().set(
     x,0,0,0,
     0,y,0,0,
@@ -167,7 +159,6 @@ function rescaleMat(matrix, x, y, z){
   )
   return multMat(scalingMatrix, matrix);
 }
-
 var lastCalledTime;
 var fps;
 
@@ -206,8 +197,8 @@ class Robot {
 
     this.x_currentLeftCalfAngle = 0;
     this.x_currentRightCalfAngle = 0;
-    this.x_currentHeadRotation= 0;  // Initial pitch (rotation around X-axis)
-    this.y_currentHeadRotation = 0;  // Initial yaw (rotation around Y-axis)
+    this.x_currentHeadRotation= 0;  // Initial pitch 
+    this.y_currentHeadRotation = 0;  // Initial yaw 
 
     this.thighAnimAngle = 0.05;
     this.calfAnimAngle = 0.05;
@@ -223,7 +214,7 @@ class Robot {
     this.initialize()
   }
 
-  // initialize matrices for parts (the seem to rotate around the middle of the torso)
+  // initialize matrices for parts 
   initialTorsoMatrix(){
     var initialTorsoMatrix = idMat4();
     initialTorsoMatrix = translateMat(initialTorsoMatrix, 0,this.torsoHeight/2 + 4*this.thighRadius + 4*this.calfRadius, 0); 
@@ -518,20 +509,21 @@ class Robot {
     var headMatrix = this.headMatrix;
 
     // Save the current rotation
-    if (axis === "x") {
-      this.x_currentHeadRotation += angle;  // Track pitch rotation
-  } else if (axis === "y") {
-      this.y_currentHeadRotation += angle;  // Track yaw rotation
-  }
+    if (axis === "x") 
+      this.x_currentHeadRotation += angle;  
+    else if (axis === "y") 
+      this.y_currentHeadRotation += angle;
+  
     this.headMatrix = idMat4();
     //translate to rotate
     this.headMatrix = translateMat(this.headMatrix, 0, -(this.torsoHeight/2+this.headRadius), 0);
-    //rotate the head 
     if (axis == "x")  this.headMatrix = rotateMat(this.headMatrix, angle, "x");
     else if (axis == "y") this.headMatrix = rotateMat(this.headMatrix, angle, "y");
+
     //translate back to original position
     this.headMatrix = translateMat(this.headMatrix, 0, (this.torsoHeight/2+this.headRadius), 0);
     this.headMatrix = multMat(headMatrix, this.headMatrix);
+
     // reatach to the torso after transform 
     var matrix = multMat(this.headMatrix, this.headInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
@@ -539,11 +531,9 @@ class Robot {
     this.head.setMatrix(matrix);
   }
 
-  // This function will rotate proximal limbs (arms and legs)
   rotateLeftArm(angle, axis) {
     this.x_currentLeftArmAngle += angle;
-    // forearm max angle is -2PI/3
-    // arm max angle inf x axis / pi/2 z axis
+
     var leftArmMatrix = this.leftArmMatrix;
     this.leftArmMatrix = idMat4();
 
@@ -557,7 +547,7 @@ class Robot {
       this.leftArmMatrix = translateMat(this.leftArmMatrix, (this.torsoRadius + this.armRadius), 0, 0);
     this.leftArmMatrix = multMat(leftArmMatrix, this.leftArmMatrix);
 
-    // reatach to the torso after transform?
+    // reatach to the torso after transform
     var matrix = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
@@ -600,8 +590,7 @@ class Robot {
 
   rotateRightArm(angle, axis) {
     this.x_currentRightArmAngle += angle;
-    // forearm max angle is -2PI/3
-    // arm max angle inf x axis / pi/2 z axis
+
     var rightArmMatrix = this.rightArmMatrix;
     this.rightArmMatrix = idMat4();
 
@@ -615,7 +604,7 @@ class Robot {
       this.rightArmMatrix = translateMat(this.rightArmMatrix, -(this.torsoRadius + this.armRadius), 0, 0);
     this.rightArmMatrix = multMat(rightArmMatrix, this.rightArmMatrix);
 
-    // reatach to the torso after transform?
+    // reatach to the torso after transform
     var matrix = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
@@ -645,7 +634,7 @@ class Robot {
     this.rightFarmMatrix = idMat4();
 
     this.rightFarmMatrix = rotateMat(this.rightFarmMatrix, angle, "x");
-    this.x_currentRightFarmAngle += angle; // keep track of angle of distal limb
+    this.x_currentRightFarmAngle += angle; 
     this.rightFarmMatrix = multMat(rightFarmMatrix, this.rightFarmMatrix);
 
     var farmMatrix = multMat(this.rightFarmMatrix, this.rightFarmInitialMatrix);
@@ -658,7 +647,6 @@ class Robot {
 
   rotateLeftThigh(angle){
     this.x_currentLeftThighAngle += angle;
-    //save previous transforms in new variable
     var leftThighMatrix = this.leftThighMatrix;
     this.leftThighMatrix = idMat4();
 
@@ -680,18 +668,20 @@ class Robot {
     this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x");
     this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.leftCalfMatrix = multMat(this.leftThighMatrix, this.leftCalfMatrix);
-    
+
+    // Set the final transformation for the forearm in torso space
     var calfMatrix = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
     calfMatrix = multMat(this.torsoMatrix, calfMatrix);
     calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
 
+    //Set the final transformation matrix to the left thigh
     this.leftCalf.setMatrix(calfMatrix);
   }
 
   rotateLeftCalf(angle){
     var leftCalfMatrix = this.leftCalfMatrix;
     this.leftCalfMatrix = idMat4();
-
+    //rotate around the right axis
     this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
     this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, angle, "x");
     this.x_currentLeftCalfAngle += angle;
@@ -730,6 +720,7 @@ class Robot {
     this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.rightCalfMatrix = multMat(this.rightThighMatrix, this.rightCalfMatrix);
     
+    //Final multiplications to set everything in place
     var calfMatrix = multMat(this.rightCalfMatrix, this.rightCalfInitialMatrix);
     calfMatrix = multMat(this.torsoMatrix, calfMatrix);
     calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
@@ -740,7 +731,7 @@ class Robot {
   rotateRightCalf(angle){
     var rightCalfMatrix = this.rightCalfMatrix;
     this.rightCalfMatrix = idMat4();
-
+    //rotate around the right axis
     this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
     this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, angle, "x");
     this.x_currentRightCalfAngle += angle;
@@ -790,29 +781,27 @@ class Robot {
     
   }
 
-  // Add methods for other parts
-  // TODO
-
   look_at(point) {
-    // Get the world position of the head
+    var localHeadPos = new THREE.Vector3(0, 0, 0);
     var headPos = new THREE.Vector3();
-    this.head.getWorldPosition(headPos);
 
-    // Compute the direction vector from the head to the target point
+   //Get world location head 
+    var matrix = new THREE.Matrix4();
+    matrix.multiplyMatrices(this.headMatrix, this.headInitialMatrix);
+    matrix.multiplyMatrices(this.torsoMatrix, matrix);
+    matrix.multiplyMatrices(this.torsoInitialMatrix, matrix);
+    localHeadPos.applyMatrix4(matrix);
+    headPos.set(localHeadPos.x, localHeadPos.y, localHeadPos.z);
+
+    // Compute the direction vector ,project on the XZ plane and normalize walk direction
     var targetDirection = new THREE.Vector3();
     targetDirection.subVectors(point, headPos).normalize();
-
-    // Project the target direction onto the XZ plane for horizontal yaw calculation
     var projectedTargetDirection = new THREE.Vector3(targetDirection.x, 0, targetDirection.z).normalize();
-
-    // Normalize walkDirection for calculation
     var currentWalkDirection = new THREE.Vector3(this.walkDirection.x, 0, this.walkDirection.z).normalize();
 
-    // Calculate the yaw difference (rotation around Y-axis) between walk direction and target direction
+    // Calculate the yaw diff (rotation around Y-axis)
     var targetYaw = Math.atan2(projectedTargetDirection.x, projectedTargetDirection.z);
     var currentYaw = Math.atan2(currentWalkDirection.x, currentWalkDirection.z);
-
-    // Calculate yaw difference and clamp it
     var yawDifference = targetYaw - currentYaw;
 
     // Calculate horizontal distance and height difference for pitch
@@ -830,35 +819,35 @@ class Robot {
     // Calculate the pitch difference for head rotation
     var pitchDifference = -targetPitch - currentPitch; // Adjusted to find the correct difference
     var isreseted = false;
-    if (point.y > 0.1) {
-        this.rotateHead(-this.y_currentHeadRotation, "y"); // Reset yaw this will breakf
-        // Calculate the Y-axis (yaw) angle using atan2 for stability
-        var targetYaw2 = Math.atan2(headPos.x - point.x, point.y - headPos.y);
-        var currentYaw2 = this.y_currentHeadRotation; // Get the current yaw (around Y-axis)
 
-        // Calculate yaw difference
+    //EXTRA FEATURE: robot can look at itself using 2 axis of rotation
+    // When looking at itself,it is not supposed to look behind himself locked out like a human 
+    // Sometimes it will break him but if you look on the ground and at him again it will be reseted proprely
+    if (point.y > 0.1) { 
+        this.rotateHead(-this.y_currentHeadRotation, "y"); // Reset yaw 
+        // Calculate the Y-axis (yaw) angle here to allow the head to look at itself
+        var targetYaw2 = Math.atan2(headPos.x - point.x, point.y - headPos.y);
+        var currentYaw2 = this.y_currentHeadRotation; 
+
         var yawDifference2 = targetYaw2 - currentYaw2;
 
         // Apply rotations
         this.rotateHead(pitchDifference, "x"); 
         this.rotateHead(yawDifference2, "y");
         isreseted =true;
-    } else {
+    } else {//when lookin at the ground 
          if (isreseted == true) {
+          //only reset the head pitch once per switch to reset
           this.rotateHead(-this.x_currentHeadRotation, "x"); 
           isreseted = false;
          }
         this.rotateHead(-this.y_currentHeadRotation, "y"); // Reset yaw
         
-        // Rotate torso based on yaw difference
+        // Rotations f
         this.rotateTorso(yawDifference);
-
-        // Rotate head based on pitch difference
         this.rotateHead(pitchDifference, "x"); 
     }
 }
-
-
   clampAngle(angle) {
     // Ensure the angle is between -π and π
     while (angle > Math.PI) angle -= 2 * Math.PI;
@@ -998,8 +987,6 @@ function checkKeyboard() {
       case "RightCalf":
         robot.rotateRightCalf(0.1);
         break;
-      // Add more cases
-      // TODO
     }
   }
 
