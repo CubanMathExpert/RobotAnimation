@@ -1,8 +1,0 @@
-in intialize() should I multMat the forearms with the torso or the arms?
-how do the local and world tranformations work?
-I can move the object in his own space but how do I move his whole space around.
-
-
-complete rotation function for arms
-(maybe) animation function for legs
-    check boundaries with floor and readjust 

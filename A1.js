@@ -1,3 +1,11 @@
+/**
+ * File: A1.js
+ * Authors: Antony Leclerc 20271552
+            Raphael Osvaldo Gonzalez Carvajal 20161430
+ * Description: This file sets up a Three.js scene with a robot that moves!
+ * Last Modified: [Insert Date Here]
+ */
+
 // ASSIGNMENT-SPECIFIC API EXTENSION
 THREE.Object3D.prototype.setMatrix = function(a) {
   this.matrix = a;
