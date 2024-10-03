@@ -763,36 +763,42 @@ class Robot {
   // the speeds are the swing speeds 
   // direciton is 1 if forward and -1 if backward
   walkAnimation(direction) {
-    //initialforearm angle
-    this.x_currentLeftFarmAngle = -Math.PI/4;
-    this.x_currentRightFarmAngle = -Math.PI/4;
-    this.x_currentRightCalfAngle = Math.PI/4;
+      // Initial forearm angle
+  this.x_currentLeftFarmAngle = -Math.PI / 4;
+  this.x_currentRightFarmAngle = -Math.PI / 4;
+  
+  let maxThighAngle = Math.PI / 7;
+  let maxCalfAngle = Math.PI / 3.5;
+  let maxArmAngle = 0.5;
 
-    let maxThighAngle = Math.PI/7;
-    let maxArmAngle = 0.5;
-    
-    // thighs
-    robot.rotateLeftThigh(direction *this.thighAnimAngle, "x");
-    robot.rotateRightThigh(-direction * this.thighAnimAngle, "x");
-    if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle){
-      this.thighAnimAngle = this.thighAnimAngle * -1;
-      //console.log("we are over the limit");
-    }
+  // Thighs
+  robot.rotateLeftThigh(direction * this.thighAnimAngle, "x");
+  robot.rotateRightThigh(-direction * this.thighAnimAngle, "x");
+  if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle) {
+    this.thighAnimAngle = this.thighAnimAngle * -1;
+  }
 
-    // calf
+  // Calves
+  let leftCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentLeftThighAngle + Math.PI / 6));
+  let rightCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentRightThighAngle + Math.PI / 6));
+  if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
     robot.rotateLeftCalf(direction * this.calfAnimAngle);
+  } else if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
+    robot.rotateLeftCalf(-direction * this.calfAnimAngle);
+  }
+
+  if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
     robot.rotateRightCalf(direction * this.calfAnimAngle);
-    if (this.x_currentLeftCalfAngle > Math.PI/3.5 || this.x_currentLeftCalfAngle < 0){
-      this.calfAnimAngle = this.calfAnimAngle * -1;
-    }
+  } else if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
+    robot.rotateRightCalf(-direction * this.calfAnimAngle);
+  }
 
-    // arm
-    robot.rotateLeftArm(direction * this.armAnimAngle, "x");
-    robot.rotateRightArm(-direction * this.armAnimAngle, "x");
-    if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle){
-      this.armAnimAngle = this.armAnimAngle * -1;
-    }
-
+  // Arm
+  robot.rotateLeftArm(direction * this.armAnimAngle, "x");
+  robot.rotateRightArm(-direction * this.armAnimAngle, "x");
+  if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle) {
+    this.armAnimAngle = this.armAnimAngle * -1;
+  }
   }
 
   checkAnchorPoint(){
