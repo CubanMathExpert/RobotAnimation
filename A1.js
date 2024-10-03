@@ -781,17 +781,32 @@ class Robot {
   // Calves
   let leftCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentLeftThighAngle + Math.PI / 6));
   let rightCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentRightThighAngle + Math.PI / 6));
-  if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
-    robot.rotateLeftCalf(direction * this.calfAnimAngle);
-  } else if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
-    robot.rotateLeftCalf(-direction * this.calfAnimAngle);
+  if (direction === 1) { // Forward
+    if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
+      robot.rotateLeftCalf(this.calfAnimAngle);
+    } else if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
+      robot.rotateLeftCalf(-this.calfAnimAngle);
+    }
+
+    if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
+      robot.rotateRightCalf(this.calfAnimAngle);
+    } else if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
+      robot.rotateRightCalf(-this.calfAnimAngle);
+    }
+  } else { // Backward
+    if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
+      robot.rotateLeftCalf(-this.calfAnimAngle);
+    } else if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
+      robot.rotateLeftCalf(this.calfAnimAngle);
+    }
+
+    if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
+      robot.rotateRightCalf(-this.calfAnimAngle);
+    } else if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
+      robot.rotateRightCalf(this.calfAnimAngle);
+    }
   }
 
-  if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
-    robot.rotateRightCalf(direction * this.calfAnimAngle);
-  } else if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
-    robot.rotateRightCalf(-direction * this.calfAnimAngle);
-  }
 
   // Arm
   robot.rotateLeftArm(direction * this.armAnimAngle, "x");
