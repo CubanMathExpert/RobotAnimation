@@ -200,9 +200,9 @@ class Robot {
     this.x_currentHeadRotation= 0;  // Initial pitch 
     this.y_currentHeadRotation = 0;  // Initial yaw 
 
-    this.thighAnimAngle = 0.05;
-    this.calfAnimAngle = 0.05;
-    this.armAnimAngle = 0.05;
+    this.thighAnimAngle = 0.01;
+    this.calfAnimAngle = 0.01;
+    this.armAnimAngle = 0.01;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -649,14 +649,18 @@ class Robot {
 
   }
 
-  rotateLeftThigh(angle){
+  rotateLeftThigh(angle, axis){
     this.x_currentLeftThighAngle += angle;
     var leftThighMatrix = this.leftThighMatrix;
     this.leftThighMatrix = idMat4();
 
     //make the actual transform
     this.leftThighMatrix = translateMat(this.leftThighMatrix, 0, (this.torsoRadius/2 + this.thighRadius), 0);
-    this.leftThighMatrix = rotateMat(this.leftThighMatrix, angle, "x");
+    if (axis == "z")
+      this.leftThighMatrix = translateMat(this.leftThighMatrix, -this.torsoRadius/2, 0, 0);
+    this.leftThighMatrix = rotateMat(this.leftThighMatrix, angle, axis);
+    if (axis == "z")
+      this.leftThighMatrix = translateMat(this.leftThighMatrix, this.torsoRadius/2, 0, 0);
     this.leftThighMatrix = translateMat(this.leftThighMatrix, 0, -(this.torsoRadius/2 + this.thighRadius), 0);
     this.leftThighMatrix = multMat(leftThighMatrix, this.leftThighMatrix);
 
@@ -669,7 +673,7 @@ class Robot {
     // calf transformation to follow the thigh
     this.leftCalfMatrix = idMat4();
     this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
-    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, "x");
+    this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, this.x_currentLeftCalfAngle, axis);
     this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.leftCalfMatrix = multMat(this.leftThighMatrix, this.leftCalfMatrix);
 
@@ -684,9 +688,8 @@ class Robot {
 
   rotateLeftCalf(angle){
     var leftCalfMatrix = this.leftCalfMatrix;
-    var testAngle = this.x_currentLeftCalfAngle + angle;
     this.leftCalfMatrix = idMat4();
-    //rotate around the right axis
+    
     this.leftCalfMatrix = translateMat(this.leftCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
     this.leftCalfMatrix = rotateMat(this.leftCalfMatrix, angle, "x");
     this.x_currentLeftCalfAngle += angle;
@@ -698,9 +701,10 @@ class Robot {
     calfMatrix = multMat(this.torsoInitialMatrix, calfMatrix);
 
     this.leftCalf.setMatrix(calfMatrix);
+    console.log(this.x_currentLeftCalfAngle);
   }
 
-  rotateRightThigh(angle){
+  rotateRightThigh(angle, axis){
     this.x_currentRightThighAngle += angle;
     //save previous transforms in new variable
     var rightThighMatrix = this.rightThighMatrix;
@@ -708,7 +712,11 @@ class Robot {
 
     //make the actual transform
     this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, (this.torsoRadius/2 + this.thighRadius), 0);
-    this.rightThighMatrix = rotateMat(this.rightThighMatrix, angle, "x");
+    if (axis == "z")
+      this.rightThighMatrix = translateMat(this.rightThighMatrix, this.torsoRadius/2, 0, 0);
+    this.rightThighMatrix = rotateMat(this.rightThighMatrix, angle, axis);
+    if (axis == "z")
+      this.rightThighMatrix = translateMat(this.rightThighMatrix, -this.torsoRadius/2, 0, 0);
     this.rightThighMatrix = translateMat(this.rightThighMatrix, 0, -(this.torsoRadius/2 + this.thighRadius), 0);
     this.rightThighMatrix = multMat(rightThighMatrix, this.rightThighMatrix);
 
@@ -721,7 +729,7 @@ class Robot {
     // calf transformation to follow the thigh
     this.rightCalfMatrix = idMat4();
     this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
-    this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, this.x_currentRightCalfAngle, "x");
+    this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, this.x_currentRightCalfAngle, axis);
     this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, -this.torsoHeight/2 - 4*this.thighRadius , 0);
     this.rightCalfMatrix = multMat(this.rightThighMatrix, this.rightCalfMatrix);
     
@@ -735,7 +743,6 @@ class Robot {
 
   rotateRightCalf(angle){
     var rightCalfMatrix = this.rightCalfMatrix;
-    var testAngle = this.x_currentRightCalfAngle + angle;
     this.rightCalfMatrix = idMat4();
     //rotate around the right axis
     
@@ -759,13 +766,14 @@ class Robot {
     //initialforearm angle
     this.x_currentLeftFarmAngle = -Math.PI/4;
     this.x_currentRightFarmAngle = -Math.PI/4;
+    this.x_currentRightCalfAngle = Math.PI/4;
 
-    let maxThighAngle = 0.6;
+    let maxThighAngle = Math.PI/7;
     let maxArmAngle = 0.5;
     
     // thighs
-    robot.rotateLeftThigh(direction *this.thighAnimAngle);
-    robot.rotateRightThigh(-direction * this.thighAnimAngle);
+    robot.rotateLeftThigh(direction *this.thighAnimAngle, "x");
+    robot.rotateRightThigh(-direction * this.thighAnimAngle, "x");
     if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle){
       this.thighAnimAngle = this.thighAnimAngle * -1;
       //console.log("we are over the limit");
@@ -773,8 +781,8 @@ class Robot {
 
     // calf
     robot.rotateLeftCalf(direction * this.calfAnimAngle);
-    robot.rotateRightCalf(-direction * this.calfAnimAngle);
-    if (this.x_currentLeftCalfAngle < -0.5 || this.x_currentLeftCalfAngle > 0){
+    robot.rotateRightCalf(direction * this.calfAnimAngle);
+    if (this.x_currentLeftCalfAngle > Math.PI/3.5 || this.x_currentLeftCalfAngle < 0){
       this.calfAnimAngle = this.calfAnimAngle * -1;
     }
 
@@ -811,7 +819,6 @@ class Robot {
     leftCalfPos.set(localLeftCalfPos.x, localLeftCalfPos.y, localLeftCalfPos.z);
 
     var lowest = Math.min(leftCalfPos.y, rightCalfPos.y);
-    console.log(lowest);
     this.torsoMatrix = translateMat(this.torsoMatrix, 0, -lowest, 0);
     this.fixBody();
   }
@@ -956,7 +963,7 @@ function checkKeyboard() {
   if (keyboard.pressed("w")){
     switch (components[selectedRobotComponent]){
       case "Torso":
-        robot.moveTorso(0.05);
+        robot.moveTorso(0.01);
         robot.checkAnchorPoint();
         robot.walkAnimation(1);
         break;
@@ -976,7 +983,7 @@ function checkKeyboard() {
         robot.rotateRightFarm(-0.1);
         break;
       case "LeftThigh":
-        robot.rotateLeftThigh(-0.1);
+        robot.rotateLeftThigh(-0.1, "x");
         robot.checkAnchorPoint();
         break;
       case "LeftCalf":
@@ -984,7 +991,7 @@ function checkKeyboard() {
         robot.checkAnchorPoint();
         break;
       case "RightThigh":
-        robot.rotateRightThigh(-0.1);
+        robot.rotateRightThigh(-0.1, "x");
         robot.checkAnchorPoint();
         break;
       case "RightCalf":
@@ -998,7 +1005,7 @@ function checkKeyboard() {
   if (keyboard.pressed("s")){
     switch (components[selectedRobotComponent]){
       case "Torso":
-        robot.moveTorso(-0.05);
+        robot.moveTorso(-0.01);
         robot.checkAnchorPoint();
         robot.walkAnimation(-1);
         break;
@@ -1018,7 +1025,7 @@ function checkKeyboard() {
         robot.rotateRightFarm(0.1);
         break;
       case "LeftThigh":
-        robot.rotateLeftThigh(0.1);
+        robot.rotateLeftThigh(0.1, "x");
         robot.checkAnchorPoint();
         break;
       case "LeftCalf":
@@ -1026,7 +1033,7 @@ function checkKeyboard() {
         robot.checkAnchorPoint();
         break;
       case  "RightThigh":
-        robot.rotateRightThigh(0.1);
+        robot.rotateRightThigh(0.1, "x");
         robot.checkAnchorPoint();
         break;
       case "RightCalf":
@@ -1052,8 +1059,12 @@ function checkKeyboard() {
         robot.rotateRightArm(0.1, "z");
         break;
       case "LeftThigh":
+        robot.rotateLeftThigh(-0.1, "z");
+        robot.checkAnchorPoint();
         break;
       case "RightThigh":
+        robot.rotateRightThigh(-0.1, "z");
+        robot.checkAnchorPoint();
         break;
       
     }
@@ -1075,8 +1086,12 @@ function checkKeyboard() {
         robot.rotateRightArm(-0.1, "z");
         break;
       case "LeftThigh":
+        robot.rotateLeftThigh(0.1, "z");
+        robot.checkAnchorPoint();
         break;
       case "RightThigh":
+        robot.rotateRightThigh(0.1, "z");
+        robot.checkAnchorPoint();
         break;
     }
     }
