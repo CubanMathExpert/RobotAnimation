@@ -386,8 +386,8 @@ class Robot {
     var matrix = multMat(this.torsoInitialMatrix, this.rightCalfInitialMatrix);
     this.rightCalf.setMatrix(matrix);
 
-	// Add robot to scene
-	scene.add(this.torso);
+	  // Add robot to scene
+	  scene.add(this.torso);
     scene.add(this.head);
     // Add parts
     // TODO
@@ -400,62 +400,6 @@ class Robot {
     scene.add(this.leftCalf);
     scene.add(this.rightCalf);
   }
-
-  rotateTorso(angle){
-    var torsoMatrix = this.torsoMatrix;
-
-    this.torsoMatrix = idMat4();
-    this.torsoMatrix = rotateMat(this.torsoMatrix, angle, "y");
-    this.torsoMatrix = multMat(torsoMatrix, this.torsoMatrix);
-
-    var matrix = multMat(this.torsoMatrix, this.torsoInitialMatrix);
-    var tempTorsoMatrix = matrix; // temp variable holding the matrix of the torso for other uses
-    this.torso.setMatrix(matrix); // this is the torso matrix to which we should attach some pieces (arms and thighs)
-
-    // head
-    var matrix2 = multMat(this.headMatrix, this.headInitialMatrix);
-    matrix = multMat(matrix, matrix2);
-    this.head.setMatrix(matrix);
-
-    this.walkDirection = rotateVec3(this.walkDirection, angle, "y");
-
-    //TODO
-    //lock other parts onto the torso 
-    var m3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
-    var m4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
-    var m5 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
-    var m6 = multMat(this.rightFarmMatrix, this.rightFarmInitialMatrix);
-    var m7 = multMat(this.leftThighMatrix, this.leftThighInitialMatrix);
-    var m8 = multMat(this.rightThighMatrix, this.rightThighInitialMatrix);
-    var m9 = multMat(this.leftCalfMatrix, this.leftCalfInitialMatrix);
-    var m10 = multMat(this.rightCalfMatrix, this.rightCalfInitialMatrix);
-
-    matrix = multMat(tempTorsoMatrix, m3);
-    this.leftArm.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m4);
-    this.rightArm.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m5);
-    this.leftFarm.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m6);
-    this.rightFarm.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m7);
-    this.leftThigh.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m8);
-    this.rightThigh.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m9);
-    this.leftCalf.setMatrix(matrix);
-
-    matrix = multMat(tempTorsoMatrix, m10);
-    this.rightCalf.setMatrix(matrix)
-
-  }
-
   fixBody(){
     var matrix = multMat(this.torsoMatrix, this.torsoInitialMatrix);
     var tempTorsoMatrix = matrix;
@@ -501,12 +445,19 @@ class Robot {
     matrix = multMat(tempTorsoMatrix, m10);
     this.rightCalf.setMatrix(matrix)
   }
-
-  moveTorso(speed){
-    this.torsoMatrix = translateMat(this.torsoMatrix, speed * this.walkDirection.x, speed * this.walkDirection.y, speed * this.walkDirection.z);
+  rotateTorso(angle){
+    var torsoMatrix = this.torsoMatrix;
+    
+    this.walkDirection = rotateVec3(this.walkDirection, angle, "y");
+    this.torsoMatrix = idMat4();
+    this.torsoMatrix = rotateMat(this.torsoMatrix, angle, "y");
+    this.torsoMatrix = multMat(torsoMatrix, this.torsoMatrix);
 
     this.fixBody();
-
+  }
+  moveTorso(speed){
+    this.torsoMatrix = translateMat(this.torsoMatrix, speed * this.walkDirection.x, speed * this.walkDirection.y, speed * this.walkDirection.z);
+    this.fixBody();
   }
 
   rotateHead(angle,axis){
@@ -564,7 +515,6 @@ class Robot {
     // Apply the arm's transformation to the forearm
     this.leftFarmMatrix = multMat(this.leftArmMatrix, this.leftFarmMatrix);
     
-
     // Set the final transformation for the forearm in torso space
     var forearmMatrix = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
     forearmMatrix = multMat(this.torsoMatrix, forearmMatrix);
@@ -621,7 +571,6 @@ class Robot {
     // Apply the arm's transformation to the forearm
     this.rightFarmMatrix = multMat(this.rightArmMatrix, this.rightFarmMatrix);
     
-
     // Set the final transformation for the forearm in torso space
     var forearmMatrix = multMat(this.rightFarmMatrix, this.rightFarmInitialMatrix);
     forearmMatrix = multMat(this.torsoMatrix, forearmMatrix);
@@ -760,10 +709,9 @@ class Robot {
     
   }
 
-  // the speeds are the swing speeds 
   // direciton is 1 if forward and -1 if backward
   walkAnimation(direction) {
-      // Initial forearm angle
+  // Initial angles
   this.x_currentLeftFarmAngle = -Math.PI / 4;
   this.x_currentRightFarmAngle = -Math.PI / 4;
   
@@ -806,7 +754,6 @@ class Robot {
       robot.rotateRightCalf(this.calfAnimAngle);
     }
   }
-
 
   // Arm
   robot.rotateLeftArm(direction * this.armAnimAngle, "x");
