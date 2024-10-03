@@ -54,7 +54,6 @@ function inverseMat(m){
 }
 
 // dans les implementations des matrices chaque ligne dans le code est une colone.
-
 function idMat4() {
   // Create Identity matrix
   var m = new THREE.Matrix4();
@@ -200,9 +199,9 @@ class Robot {
     this.x_currentHeadRotation= 0;  // Initial pitch 
     this.y_currentHeadRotation = 0;  // Initial yaw 
 
-    this.thighAnimAngle = 0.01;
-    this.calfAnimAngle = 0.01;
-    this.armAnimAngle = 0.01;
+    this.thighAnimAngle = 0.03;
+    this.calfAnimAngle = 0.03;
+    this.armAnimAngle = 0.03;
 
     // Animation
     this.walkDirection = new THREE.Vector3( 0, 0, 1 );
@@ -295,7 +294,7 @@ class Robot {
 
   //-------------------------------------------------------------------------------------------------------------
 
-  initialize() { // (LOCAL SPACE I GUESS)
+  initialize() {
     // Torso
     var torsoGeometry = new THREE.CubeGeometry(2*this.torsoRadius, this.torsoHeight, this.torsoRadius, 64);
     this.torso = new THREE.Mesh(torsoGeometry, this.material);
@@ -303,9 +302,6 @@ class Robot {
     // Head
     var headGeometry = new THREE.CubeGeometry(2*this.headRadius, this.headRadius, this.headRadius);
     this.head = new THREE.Mesh(headGeometry, this.material);
-
-    // Add parts 
-    //TODO 
 
     // arms (can we use one geometry for both??)
     var armGeometry = new THREE.SphereGeometry(this.armRadius, 64, 32);
@@ -338,9 +334,6 @@ class Robot {
     var matrix = multMat(this.torsoInitialMatrix, this.headInitialMatrix);
     this.head.setMatrix(matrix);
 
-    // Add transformations
-    // TODO
-    
     // arms (world space transformations? or relative to torso?) // should I bind all of them to the torso?
     this.leftArmInitialMatrix = this.initialLeftArmMatrix();
     this.leftArmMatrix = idMat4();
@@ -389,8 +382,6 @@ class Robot {
 	  // Add robot to scene
 	  scene.add(this.torso);
     scene.add(this.head);
-    // Add parts
-    // TODO
     scene.add(this.leftArm);
     scene.add(this.rightArm);
     scene.add(this.leftFarm);
@@ -410,8 +401,6 @@ class Robot {
     matrix = multMat(matrix, matrix2);
     this.head.setMatrix(matrix);
 
-    // TODO
-    //(CHECK FOR BINDING ERRORS)
     var m3 = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
     var m4 = multMat(this.rightArmMatrix, this.rightArmInitialMatrix);
     var m5 = multMat(this.leftFarmMatrix, this.leftFarmInitialMatrix);
@@ -468,7 +457,6 @@ class Robot {
       this.x_currentHeadRotation += angle;  
     else if (axis === "y") 
       this.y_currentHeadRotation += angle;
-  
     this.headMatrix = idMat4();
     //translate to rotate
     this.headMatrix = translateMat(this.headMatrix, 0, -(this.torsoHeight/2+this.headRadius), 0);
@@ -502,7 +490,7 @@ class Robot {
       this.leftArmMatrix = translateMat(this.leftArmMatrix, (this.torsoRadius + this.armRadius), 0, 0);
     this.leftArmMatrix = multMat(leftArmMatrix, this.leftArmMatrix);
 
-    // reatach to the torso after transform
+    // reattach to the torso after transform
     var matrix = multMat(this.leftArmMatrix, this.leftArmInitialMatrix);
     matrix = multMat(this.torsoMatrix, matrix);
     matrix = multMat(this.torsoInitialMatrix, matrix);
@@ -655,6 +643,7 @@ class Robot {
 
   rotateRightThigh(angle, axis){
     this.x_currentRightThighAngle += angle;
+
     //save previous transforms in new variable
     var rightThighMatrix = this.rightThighMatrix;
     this.rightThighMatrix = idMat4();
@@ -693,8 +682,8 @@ class Robot {
   rotateRightCalf(angle){
     var rightCalfMatrix = this.rightCalfMatrix;
     this.rightCalfMatrix = idMat4();
+
     //rotate around the right axis
-    
     this.rightCalfMatrix = translateMat(this.rightCalfMatrix, 0, this.torsoHeight/2 + 4*this.thighRadius , 0);
     this.rightCalfMatrix = rotateMat(this.rightCalfMatrix, angle, "x");
     this.x_currentRightCalfAngle += angle;
@@ -711,56 +700,58 @@ class Robot {
 
   // direciton is 1 if forward and -1 if backward
   walkAnimation(direction) {
-  // Initial angles
-  this.x_currentLeftFarmAngle = -Math.PI / 4;
-  this.x_currentRightFarmAngle = -Math.PI / 4;
+    // Initial angles
+    this.x_currentLeftFarmAngle = -Math.PI / 4;
+    this.x_currentRightFarmAngle = -Math.PI / 4;
   
-  let maxThighAngle = Math.PI / 7;
-  let maxCalfAngle = Math.PI / 3.5;
-  let maxArmAngle = 0.5;
+    let maxThighAngle = Math.PI / 7;
+    let maxCalfAngle = Math.PI / 3.5;
+    let maxArmAngle = 0.5;
 
-  // Thighs
-  robot.rotateLeftThigh(direction * this.thighAnimAngle, "x");
-  robot.rotateRightThigh(-direction * this.thighAnimAngle, "x");
-  if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle) {
-    this.thighAnimAngle = this.thighAnimAngle * -1;
-  }
-
-  // Calves
-  let leftCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentLeftThighAngle + Math.PI / 6));
-  let rightCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentRightThighAngle + Math.PI / 6));
-  if (direction === 1) { // Forward
-    if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
-      robot.rotateLeftCalf(this.calfAnimAngle);
-    } else if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
-      robot.rotateLeftCalf(-this.calfAnimAngle);
+    // Thighs
+    robot.rotateLeftThigh(direction * this.thighAnimAngle, "x");
+    robot.rotateRightThigh(-direction * this.thighAnimAngle, "x");
+    if (this.x_currentRightThighAngle < -maxThighAngle || this.x_currentRightThighAngle > maxThighAngle) {
+      this.thighAnimAngle = this.thighAnimAngle * -1;
     }
 
-    if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
-      robot.rotateRightCalf(this.calfAnimAngle);
-    } else if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
-      robot.rotateRightCalf(-this.calfAnimAngle);
-    }
-  } else { // Backward
-    if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
-      robot.rotateLeftCalf(-this.calfAnimAngle);
-    } else if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
-      robot.rotateLeftCalf(this.calfAnimAngle);
+    // Calves
+    let leftCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentLeftThighAngle + Math.PI / 6));
+    let rightCalfTargetAngle = Math.max(0, Math.min(maxCalfAngle, this.x_currentRightThighAngle + Math.PI / 6));
+    if (direction === 1) { // Forward
+      //based on target go inwards or outwards 
+      if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
+        robot.rotateLeftCalf(this.calfAnimAngle);
+      } else if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
+        robot.rotateLeftCalf(-this.calfAnimAngle);
+      }
+      //Same as above but for the right calf
+      if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
+        robot.rotateRightCalf(this.calfAnimAngle);
+      } else if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
+        robot.rotateRightCalf(-this.calfAnimAngle);
+      }
+    } else { // Backward
+      //here it is the same as above but the checks are the opposite 
+      if (this.x_currentLeftCalfAngle > leftCalfTargetAngle) {
+        robot.rotateLeftCalf(-this.calfAnimAngle);
+      } else if (this.x_currentLeftCalfAngle < leftCalfTargetAngle) {
+        robot.rotateLeftCalf(this.calfAnimAngle);
+      }
+
+      if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
+        robot.rotateRightCalf(-this.calfAnimAngle);
+      } else if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
+        robot.rotateRightCalf(this.calfAnimAngle);
+      }
     }
 
-    if (this.x_currentRightCalfAngle > rightCalfTargetAngle) {
-      robot.rotateRightCalf(-this.calfAnimAngle);
-    } else if (this.x_currentRightCalfAngle < rightCalfTargetAngle) {
-      robot.rotateRightCalf(this.calfAnimAngle);
+    // Arm
+    robot.rotateLeftArm(direction * this.armAnimAngle, "x");
+    robot.rotateRightArm(-direction * this.armAnimAngle, "x");
+    if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle) {
+      this.armAnimAngle = this.armAnimAngle * -1;
     }
-  }
-
-  // Arm
-  robot.rotateLeftArm(direction * this.armAnimAngle, "x");
-  robot.rotateRightArm(-direction * this.armAnimAngle, "x");
-  if (this.x_currentLeftArmAngle < -maxArmAngle || this.x_currentLeftArmAngle > maxArmAngle) {
-    this.armAnimAngle = this.armAnimAngle * -1;
-  }
   }
 
   checkAnchorPoint(){
@@ -845,7 +836,7 @@ class Robot {
         this.rotateHead(pitchDifference, "x"); 
         this.rotateHead(yawDifference2, "y");
         isreseted =true;
-    } else {//when lookin at the ground 
+    } else {//when looking at the ground 
          if (isreseted == true) {
           //only reset the head pitch once per switch to reset
           this.rotateHead(-this.x_currentHeadRotation, "x"); 
@@ -858,12 +849,6 @@ class Robot {
         this.rotateHead(pitchDifference, "x"); 
     }
 }
-  clampAngle(angle) {
-    // Ensure the angle is between -π and π
-    while (angle > Math.PI) angle -= 2 * Math.PI;
-    while (angle < -Math.PI) angle += 2 * Math.PI;
-    return angle;
-  }
 }
 
 var robot = new Robot();
@@ -931,7 +916,7 @@ function checkKeyboard() {
   if (keyboard.pressed("w")){
     switch (components[selectedRobotComponent]){
       case "Torso":
-        robot.moveTorso(0.01);
+        robot.moveTorso(0.05);
         robot.checkAnchorPoint();
         robot.walkAnimation(1);
         break;
@@ -973,7 +958,7 @@ function checkKeyboard() {
   if (keyboard.pressed("s")){
     switch (components[selectedRobotComponent]){
       case "Torso":
-        robot.moveTorso(-0.01);
+        robot.moveTorso(-0.05);
         robot.checkAnchorPoint();
         robot.walkAnimation(-1);
         break;
